@@ -1,0 +1,76 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           git-summary
+version:        0.1.4
+description:    Please see the README on GitHub at <https://github.com/buntec/git-summary#readme>
+homepage:       https://github.com/buntec/git-summary#readme
+bug-reports:    https://github.com/buntec/git-summary/issues
+author:         Christoph Bunte
+maintainer:     christophbunte@gmail.com
+copyright:      2021 Christoph Bunte
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/buntec/git-summary
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_git_summary
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      async
+    , base >=4.7 && <5
+    , directory
+    , filepath
+    , optparse-applicative
+    , process
+  default-language: Haskell2010
+
+executable git-summary
+  main-is: Main.hs
+  other-modules:
+      Paths_git_summary
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints -O2 -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      async
+    , base >=4.7 && <5
+    , directory
+    , filepath
+    , git-summary
+    , optparse-applicative
+    , process
+  default-language: Haskell2010
+
+test-suite git-summary-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_git_summary
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      async
+    , base >=4.7 && <5
+    , directory
+    , filepath
+    , git-summary
+    , optparse-applicative
+    , process
+  default-language: Haskell2010

@@ -86,14 +86,12 @@ data PathStatus = Untracked | Modified | Added | Deleted deriving (Eq)
 
 pathStatusFromStatusLine :: StatusLine -> PathStatus
 pathStatusFromStatusLine StatusLine {x, y} = case (x, y) of
-  ('M', _) -> Modified
-  (_, 'M') -> Modified
-  ('?', _) -> Untracked
-  (_, '?') -> Untracked
-  ('D', _) -> Modified
-  (_, 'D') -> Modified
-  ('A', _) -> Modified
-  (_, 'A') -> Modified
+  ('?', '?') -> Untracked
+  ('A', ' ') -> Added
+  (' ', 'M') -> Modified
+  ('M', '_') -> Modified
+  (' ', 'D') -> Deleted
+  ('D', '_') -> Deleted
   (_, _) -> Modified
 
 data RepoStatus = RepoStatus
@@ -126,11 +124,13 @@ hasUnpulled rs = unpulled rs > 0
 
 formatTags :: RepoStatus -> String
 formatTags rs =
-  let m = if hasModified rs then "M" else " "
-      u = if hasUntracked rs then "?" else " "
-      up = if hasUnpushed rs then "^" else " "
-      down = if hasUnpulled rs then "v" else " "
-   in m ++ u ++ up ++ down
+  let m = if hasModified rs then "M" else "."
+      u = if hasUntracked rs then "?" else "."
+      a = if hasAdded rs then "A" else "."
+      d = if hasDeleted rs then "D" else "."
+      up = if hasUnpushed rs then "^" else "."
+      down = if hasUnpulled rs then "v" else "."
+   in m ++ a ++ d ++ u ++ up ++ down
 
 formatRepoStatus :: RepoStatus -> Bool -> String
 formatRepoStatus rs fullPath =

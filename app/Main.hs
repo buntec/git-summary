@@ -16,7 +16,7 @@ import System.FilePath (splitPath, (</>))
 import System.Process
 
 appVersion :: String
-appVersion = "0.1.0"
+appVersion = "0.1.1"
 
 data Config = Config
   { rootPath :: String,

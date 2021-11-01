@@ -6,14 +6,17 @@ import Control.Concurrent.Async (mapConcurrently)
 import Control.Exception (try)
 import Control.Exception.Base (SomeException)
 import Control.Monad (filterM, forM_, when)
+import Data.List (sortOn)
 import Data.Maybe (catMaybes, fromMaybe)
-import GHC.OldList (sortOn)
 import Options.Applicative (Parser, auto, execParser, fullDesc, header, help, helper, info, long, metavar, option, short, strOption, switch, value, (<**>))
 import Options.Applicative.Types (ParserInfo)
 import System.Directory (doesDirectoryExist, getCurrentDirectory, listDirectory, pathIsSymbolicLink)
 import System.Exit
 import System.FilePath (splitPath, (</>))
 import System.Process
+
+appVersion :: String
+appVersion = "0.1.0"
 
 data Config = Config
   { rootPath :: String,
@@ -66,7 +69,10 @@ configParser0 =
       )
 
 configParser :: ParserInfo Config
-configParser = info (configParser0 <**> helper) (fullDesc <> header "git-summary - displays a status summary of all git repos under a given root")
+configParser =
+  info
+    (configParser0 <**> helper)
+    (fullDesc <> header ("git-summary " ++ appVersion ++ " - displays a status summary of all git repos under a given root"))
 
 data StatusLine = StatusLine
   { x :: Char,
@@ -76,7 +82,7 @@ data StatusLine = StatusLine
   }
   deriving (Show)
 
-data PathStatus = Untracked | Modified | Added | Deleted | Unknown deriving (Eq)
+data PathStatus = Untracked | Modified | Added | Deleted deriving (Eq)
 
 pathStatusFromStatusLine :: StatusLine -> PathStatus
 pathStatusFromStatusLine StatusLine {x, y} = case (x, y) of
@@ -243,7 +249,7 @@ main = do
           else filter isModified . catMaybes <$> mapConcurrently (getGitStatus cfg) gitRepos
       let formatter = \status -> formatRepoStatus status (showFullPath cfg)
       let sorter = if showFullPath cfg then repoPath else getRepoName
-      let s0 = sortOn sorter statuses
-      forM_ s0 $ putStrLn . formatter
+      let sortedStatuses = sortOn sorter statuses
+      forM_ sortedStatuses $ putStrLn . formatter
       putStrLn $ "\n" ++ show (length gitRepos) ++ " repos found."
     else putStrLn "Error: Unable to find git executable."

@@ -24,16 +24,19 @@ isSymbolicLinkSafe p = do
 isGitDir :: String -> IO Bool
 isGitDir dir = toDirsSafe dir & Stream.elem ".git"
 
-gitDirs :: Stream.IsStream t => Int -> String -> t IO String
-gitDirs maxDepth root = Stream.fromAsync $ do
+isDotFile :: String -> Bool
+isDotFile path = head path == '.'
+
+gitDirs :: Stream.IsStream t => Int -> Bool -> String -> t IO String
+gitDirs maxDepth filterDots root = Stream.fromAsync $ do
   if maxDepth > 0
     then do
-      p <- toDirsSafe root
+      p <- toDirsSafe root & if filterDots then Stream.filter (not . isDotFile) else id
       let ap = root </> p
       isGit <- Stream.fromEffect $ isGitDir ap
       isSymLink <- Stream.fromEffect $ isSymbolicLinkSafe ap
       case (isGit, isSymLink) of
         (_, True) -> Stream.nil
         (True, _) -> return ap
-        (False, False) -> gitDirs (maxDepth - 1) ap
+        (False, False) -> gitDirs (maxDepth - 1) filterDots ap
     else Stream.nil

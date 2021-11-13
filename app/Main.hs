@@ -20,7 +20,7 @@ main = do
       root <- maybe getCurrentDirectory return (Cfg.rootPath cfg)
       countRef <- newIORef 0 :: IO (IORef Int)
       let formatter = \status -> Git.formatRepoStatus status (Cfg.showAbsPath cfg) root
-      gitDirs (Cfg.maxDepth cfg) root
+      gitDirs (Cfg.maxDepth cfg) (Cfg.filterDots cfg) root
         & Stream.mapMaybeM (Git.getGitStatus cfg)
         & Stream.trace (\_ -> modifyIORef' countRef (+ 1))
         & Stream.filter (if Cfg.showAllRepos cfg then const True else Git.isModified)

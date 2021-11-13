@@ -11,6 +11,7 @@ appVersion = showVersion BuildInfo.version
 data Config = Config
   { rootPath :: Maybe String,
     showAllRepos :: Bool,
+    filterDots :: Bool,
     showLegend :: Bool,
     localOnly :: Bool,
     showAbsPath :: Bool,
@@ -36,6 +37,11 @@ configParser0 =
           <> short 'a'
           <> help "Show all repos. When absent, only repos that are not up-to-date or have local modifications are shown."
       )
+    <*> switch
+      ( long "skip-dots"
+          <> short 's'
+          <> help "Do not traverse into directories that start with a dot."
+      )
     <*> ( not
             <$> switch
               ( long "no-legend"
@@ -56,7 +62,7 @@ configParser0 =
       ( long "max-depth"
           <> short 'd'
           <> value defaultSearchDepth
-          <> help ("The maximum depth of recursion for finding git repos; defaults to " ++ show defaultSearchDepth ++ "; negative values mean infinity.")
+          <> help ("The maximum depth of recursion for finding git repos; defaults to " ++ show defaultSearchDepth ++ ".")
           <> metavar "INT"
       )
 

@@ -2,19 +2,11 @@ module StreamUtils (gitDirs) where
 
 import Control.Exception (SomeException)
 import Control.Exception.Base (try)
-import Control.Monad (unless, when)
 import Data.Function ((&))
-import qualified Streamly.Data.Fold as Fold
-import Streamly.Internal.FileSystem.Dir (toDirs, toFiles)
+import Streamly.Internal.FileSystem.Dir (toDirs)
 import qualified Streamly.Prelude as Stream
 import System.Directory (pathIsSymbolicLink)
 import System.FilePath ((</>))
-
-toFilesSafe :: Stream.IsStream t => String -> t IO String
-toFilesSafe dir = toFiles dir & Stream.handle handler
-  where
-    handler :: (Stream.IsStream t) => SomeException -> t IO String
-    handler _ = Stream.nil
 
 toDirsSafe :: Stream.IsStream t => String -> t IO String
 toDirsSafe root = toDirs root & Stream.handle handler
@@ -45,6 +37,3 @@ gitDirs maxDepth root = Stream.fromAsync $ do
         (True, _) -> return ap
         (False, False) -> gitDirs (maxDepth - 1) ap
     else Stream.nil
-
-printDirs :: String -> IO ()
-printDirs root = gitDirs 5 root & Stream.mapM putStrLn & Stream.drain

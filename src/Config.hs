@@ -1,7 +1,7 @@
 module Config (Config (..), configParser) where
 
 import Data.Version (showVersion)
-import Options.Applicative (Parser, auto, fullDesc, header, help, helper, info, long, metavar, option, short, strOption, switch, value, (<**>))
+import Options.Applicative (Parser, auto, fullDesc, header, help, helper, info, long, metavar, option, optional, short, strOption, switch, value, (<**>))
 import Options.Applicative.Types (ParserInfo)
 import qualified Paths_git_summary as BuildInfo
 
@@ -9,29 +9,32 @@ appVersion :: String
 appVersion = showVersion BuildInfo.version
 
 data Config = Config
-  { rootPath :: String,
+  { rootPath :: Maybe String,
     showAllRepos :: Bool,
     showLegend :: Bool,
-    verbose :: Bool,
     localOnly :: Bool,
     showFullPath :: Bool,
     maxDepth :: Int
   }
 
+defaultSearchDepth :: Int
+defaultSearchDepth = 7
+
 configParser0 :: Parser Config
 configParser0 =
   Config
-    <$> strOption
-      ( long "root"
-          <> short 'r'
-          <> value ""
-          <> help "The root directory under which to search recursively for git repos; defaults to the current working directory."
-          <> metavar "DIR"
+    <$> optional
+      ( strOption
+          ( long "root"
+              <> short 'r'
+              <> help "The root directory under which to search recursively for git repos; defaults to the current working directory."
+              <> metavar "DIR"
+          )
       )
     <*> switch
       ( long "show-all"
           <> short 'a'
-          <> help "Show all repos. If absent, only repos that are not up-to-date or have local modifications are shown."
+          <> help "Show all repos. When absent, only repos that are not up-to-date or have local modifications are shown."
       )
     <*> ( not
             <$> switch
@@ -39,11 +42,6 @@ configParser0 =
                   <> help "Do not show the legend."
               )
         )
-    <*> switch
-      ( long "verbose"
-          <> short 'v'
-          <> help "Show warning messages etc."
-      )
     <*> switch
       ( long "local-only"
           <> short 'l'
@@ -53,15 +51,15 @@ configParser0 =
             <$> switch
               ( long "short"
                   <> short 's'
-                  <> help "Show only the name of the folder containing the repo instead of the full path."
+                  <> help "Show only the name of the directory containing the repo instead of the full path."
               )
         )
     <*> option
       auto
       ( long "max-depth"
           <> short 'd'
-          <> value 10
-          <> help "The maximum depth of recursion for finding git repos; defaults to 10; negative values mean infinity."
+          <> value defaultSearchDepth
+          <> help ("The maximum depth of recursion for finding git repos; defaults to " ++ show defaultSearchDepth ++ "; negative values mean infinity.")
           <> metavar "INT"
       )
 

@@ -7,10 +7,25 @@ import Data.List (sortOn)
 import Data.Maybe (catMaybes)
 import qualified GitUtils as Git
 import Options.Applicative (execParser)
+import StreamUtils (gitDirs)
+import qualified Streamly.Data.Fold as Fold
+import Streamly.Internal.FileSystem.Dir (toDirs, toFiles)
+import qualified Streamly.Prelude as Stream
 import System.Directory (getCurrentDirectory)
 
 main :: IO ()
 main = do
+  cfg <- execParser Cfg.configParser
+  hasGit <- Git.isGitAvailable
+  if hasGit
+    then do
+      cwd <- getCurrentDirectory
+      gitDirs (Cfg.maxDepth cfg) cwd & Stream.drain
+      putStrLn "done!"
+    else putStrLn "Error: Unable to find git executable on your PATH."
+
+main0 :: IO ()
+main0 = do
   cfg <- execParser Cfg.configParser
   hasGit <- Git.isGitAvailable
   if hasGit

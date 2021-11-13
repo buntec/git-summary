@@ -48,9 +48,6 @@ data StatusLine = StatusLine
 
 data PathStatus = Untracked | Modified | Added | Deleted deriving (Eq)
 
-statusLegend :: String
-statusLegend = "'?' -> untracked, 'A' -> added, 'M' -> modified, 'D' -> deleted"
-
 isGitRepo :: Config -> FilePath -> IO Bool
 isGitRepo cfg dir = do
   fs <- listDirectorySafe cfg dir
@@ -96,13 +93,16 @@ hasUnpulled rs = unpulled rs > 0
 
 formatTags :: RepoStatus -> String
 formatTags rs =
-  let m = if hasModified rs then "M" else "."
-      u = if hasUntracked rs then "?" else "."
-      a = if hasAdded rs then "A" else "."
-      d = if hasDeleted rs then "D" else "."
-      up = if hasUnpushed rs then "^" else "."
-      down = if hasUnpulled rs then "v" else "."
+  let m = if hasModified rs then "M" else " "
+      u = if hasUntracked rs then "?" else " "
+      a = if hasAdded rs then "A" else " "
+      d = if hasDeleted rs then "D" else " "
+      up = if hasUnpushed rs then "^" else " "
+      down = if hasUnpulled rs then "v" else " "
    in m ++ a ++ d ++ u ++ up ++ down
+
+statusLegend :: String
+statusLegend = "modified (M), untracked (?), added (A), deleted (D), unpushed (^), unpulled (v)"
 
 formatRepoStatus :: RepoStatus -> Bool -> String
 formatRepoStatus rs fullPath =

@@ -2,7 +2,7 @@ module Main where
 
 import qualified Config as Cfg
 import Control.Concurrent.Async (mapConcurrently)
-import Control.Monad (forM_)
+import Control.Monad (forM_, when)
 import Data.List (sortOn)
 import Data.Maybe (catMaybes)
 import qualified GitUtils as Git
@@ -27,5 +27,5 @@ main = do
       let sortedStatuses = sortOn sorter statuses
       forM_ sortedStatuses $ putStrLn . formatter
       putStrLn $ "\n" ++ show (length gitRepos) ++ " repos found."
-      putStrLn $ "Legend: " ++ Git.statusLegend
-    else putStrLn "Error: Unable to find git executable."
+      when (Cfg.showLegend cfg) (putStrLn $ "Legend: " ++ Git.statusLegend)
+    else putStrLn "Error: Unable to find git executable on your PATH."

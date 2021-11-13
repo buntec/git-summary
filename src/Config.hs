@@ -11,6 +11,7 @@ appVersion = showVersion BuildInfo.version
 data Config = Config
   { rootPath :: String,
     showAllRepos :: Bool,
+    showLegend :: Bool,
     verbose :: Bool,
     localOnly :: Bool,
     showFullPath :: Bool,
@@ -32,6 +33,12 @@ configParser0 =
           <> short 'a'
           <> help "Show all repos. If absent, only repos that are not up-to-date or have local modifications are shown."
       )
+    <*> ( not
+            <$> switch
+              ( long "no-legend"
+                  <> help "Do not show the legend."
+              )
+        )
     <*> switch
       ( long "verbose"
           <> short 'v'

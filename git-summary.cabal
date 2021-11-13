@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           git-summary
-version:        0.1.1
+version:        0.1.2
 description:    Please see the README on GitHub at <https://github.com/buntec/git-summary#readme>
 homepage:       https://github.com/buntec/git-summary#readme
 bug-reports:    https://github.com/buntec/git-summary/issues
@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Config
+      FileUtils
+      GitUtils
   other-modules:
       Paths_git_summary
   hs-source-dirs:

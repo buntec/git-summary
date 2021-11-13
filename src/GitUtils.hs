@@ -18,7 +18,7 @@ import Control.Monad (filterM)
 import Data.Maybe (fromMaybe)
 import FileUtils (doesDirectoryExistSafe, isSymbolicLinkSafe, listDirectorySafe)
 import System.Exit
-import System.FilePath (splitPath, (</>))
+import System.FilePath (makeRelative, splitPath, (</>))
 import System.Process
 
 findGitRepos :: Config -> FilePath -> IO [FilePath]
@@ -93,21 +93,21 @@ hasUnpulled rs = unpulled rs > 0
 
 formatTags :: RepoStatus -> String
 formatTags rs =
-  let m = if hasModified rs then "M" else " "
-      u = if hasUntracked rs then "?" else " "
-      a = if hasAdded rs then "A" else " "
-      d = if hasDeleted rs then "D" else " "
-      up = if hasUnpushed rs then "^" else " "
-      down = if hasUnpulled rs then "v" else " "
+  let m = if hasModified rs then "M" else "-"
+      u = if hasUntracked rs then "?" else "-"
+      a = if hasAdded rs then "A" else "-"
+      d = if hasDeleted rs then "D" else "-"
+      up = if hasUnpushed rs then "^" else "-"
+      down = if hasUnpulled rs then "v" else "-"
    in m ++ a ++ d ++ u ++ up ++ down
 
 statusLegend :: String
 statusLegend = "modified (M), untracked (?), added (A), deleted (D), unpushed (^), unpulled (v)"
 
-formatRepoStatus :: RepoStatus -> Bool -> String
-formatRepoStatus rs fullPath =
-  let repoName = last $ splitPath (repoPath rs)
-      label = if fullPath then repoPath rs else repoName
+formatRepoStatus :: RepoStatus -> Bool -> String -> String
+formatRepoStatus rs fullPath root =
+  let absRepoPath = repoPath rs
+      label = if fullPath then absRepoPath else makeRelative root absRepoPath
       tags = formatTags rs
    in tags ++ " " ++ label
 

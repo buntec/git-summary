@@ -2,16 +2,13 @@ module FileUtils (listDirectorySafe, doesDirectoryExistSafe, isSymbolicLinkSafe)
 
 import Config (Config (..))
 import Control.Exception (SomeException, try)
-import Control.Monad (when)
 import System.Directory (doesDirectoryExist, listDirectory, pathIsSymbolicLink)
 
 listDirectorySafe :: Config -> FilePath -> IO [FilePath]
-listDirectorySafe cfg dir = do
+listDirectorySafe _ dir = do
   efs <- try (listDirectory dir) :: IO (Either SomeException [FilePath])
   case efs of
-    Left e -> do
-      when (verbose cfg) $ putStrLn ("Failed to access directory " ++ dir ++ show e)
-      return []
+    Left _ -> return []
     Right fs -> return fs
 
 doesDirectoryExistSafe :: Config -> FilePath -> IO Bool

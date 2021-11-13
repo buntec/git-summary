@@ -1,13 +1,15 @@
 module Main where
 
 import qualified Config as Cfg
-import Control.Concurrent.Async (mapConcurrently)
-import Control.Monad (forM_, when)
-import Data.List (sortOn)
-import Data.Maybe (catMaybes)
+import Control.Monad (when)
+import Data.Function ((&))
+import Data.IORef (IORef, modifyIORef', readIORef)
 import qualified GitUtils as Git
 import Options.Applicative (execParser)
+import StreamUtils (gitDirs)
+import qualified Streamly.Prelude as Stream
 import System.Directory (getCurrentDirectory)
+import System.Directory.Internal.Prelude (newIORef)
 
 main :: IO ()
 main = do
@@ -15,17 +17,18 @@ main = do
   hasGit <- Git.isGitAvailable
   if hasGit
     then do
-      cwd <- getCurrentDirectory
-      let root = if not (null (Cfg.rootPath cfg)) then Cfg.rootPath cfg else cwd
-      gitRepos <- Git.findGitRepos cfg root
-      statuses <-
-        if Cfg.showAllRepos cfg
-          then catMaybes <$> mapConcurrently (Git.getGitStatus cfg) gitRepos
-          else filter Git.isModified . catMaybes <$> mapConcurrently (Git.getGitStatus cfg) gitRepos
-      let formatter = \status -> Git.formatRepoStatus status (Cfg.showFullPath cfg)
-      let sorter = if Cfg.showFullPath cfg then Git.repoPath else Git.getRepoName
-      let sortedStatuses = sortOn sorter statuses
-      forM_ sortedStatuses $ putStrLn . formatter
-      putStrLn $ "\n" ++ show (length gitRepos) ++ " repos found."
+      root <- maybe getCurrentDirectory return (Cfg.rootPath cfg)
+      countRef <- newIORef 0 :: IO (IORef Int)
+      let formatter = \status -> Git.formatRepoStatus status (Cfg.showAbsPath cfg) root
+      gitDirs (Cfg.maxDepth cfg) (Cfg.filterDots cfg) root
+        & Stream.mapMaybeM (Git.getGitStatus cfg)
+        & Stream.trace (\_ -> modifyIORef' countRef (+ 1))
+        & Stream.filter (if Cfg.showAllRepos cfg then const True else Git.isModified)
+        & Stream.map formatter
+        & Stream.mapM putStrLn
+        & Stream.fromAsync
+        & Stream.drain
+      nRepos <- readIORef countRef
+      putStrLn $ "\n" ++ show nRepos ++ " repos checked."
       when (Cfg.showLegend cfg) (putStrLn $ "Legend: " ++ Git.statusLegend)
-    else putStrLn "Error: Unable to find git executable on your PATH."
+    else putStrLn "Error: Unable to find git executable on PATH."

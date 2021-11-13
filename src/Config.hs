@@ -13,7 +13,7 @@ data Config = Config
     showAllRepos :: Bool,
     showLegend :: Bool,
     localOnly :: Bool,
-    showFullPath :: Bool,
+    showAbsPath :: Bool,
     maxDepth :: Int
   }
 
@@ -47,13 +47,10 @@ configParser0 =
           <> short 'l'
           <> help "Skip git fetch."
       )
-    <*> ( not
-            <$> switch
-              ( long "short"
-                  <> short 's'
-                  <> help "Show only the name of the directory containing the repo instead of the full path."
-              )
-        )
+    <*> switch
+      ( long "abs-paths"
+          <> help "Show absolute paths to repos instead of relative to the root."
+      )
     <*> option
       auto
       ( long "max-depth"

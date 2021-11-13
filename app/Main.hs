@@ -3,6 +3,7 @@ module Main where
 import qualified Config as Cfg
 import Control.Concurrent.Async (mapConcurrently)
 import Control.Monad (forM_, when)
+import Data.Function ((&))
 import Data.List (sortOn)
 import Data.Maybe (catMaybes)
 import qualified GitUtils as Git

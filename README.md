@@ -7,7 +7,7 @@ given root (which defaults to the current working directory).
 
 Use `git-summary --help` for a list of options.
 
-Stand-alone binaries for Linux, macOS and Window are available on
+Stand-alone binaries for Linux, macOS and Windows are available on
 the [release page](https://github.com/buntec/git-summary/releases).
 
 The only prerequisite is git itself, which must be on your PATH.
@@ -16,4 +16,5 @@ To install, simply download and extract the binary for your OS and copy it to a 
 On macOS, running it the first time will most likely require manual unblocking under
 System Preferences -> Security & Privacy.
 
-Heavily inspired by this [bash script](https://github.com/MirkoLedda/git-summary) of the same name.
+The tool is written in Haskell and heavily inspired
+by this [bash script](https://github.com/MirkoLedda/git-summary) of the same name.

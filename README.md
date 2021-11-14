@@ -1,5 +1,7 @@
 # git-summary
 
+![A screenshot](screenshot1.png)
+
 A command-line tool that displays a concise status summary of all git repos under a
 given root (which defaults to the current working directory).
 

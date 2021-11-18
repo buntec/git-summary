@@ -13,7 +13,7 @@ data Config = Config
     showAllRepos :: Bool,
     filterDots :: Bool,
     showLegend :: Bool,
-    localOnly :: Bool,
+    doFetch :: Bool,
     showAbsPath :: Bool,
     maxDepth :: Int
   }
@@ -49,9 +49,9 @@ configParser0 =
               )
         )
     <*> switch
-      ( long "local-only"
-          <> short 'l'
-          <> help "Skip git fetch."
+      ( long "fetch"
+          <> short 'f'
+          <> help "Do `git fetch` on every repo checked."
       )
     <*> switch
       ( long "abs-paths"

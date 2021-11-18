@@ -4,6 +4,7 @@ module GitUtils
   ( statusLegend,
     findGitRepos,
     isGitAvailable,
+    doGitFetch,
     getRepoName,
     isModified,
     getGitStatus,
@@ -15,6 +16,7 @@ where
 import Config (Config (..))
 import Control.Concurrent.Async (mapConcurrently)
 import Control.Monad (filterM)
+import Data.Functor (void)
 import Data.Maybe (fromMaybe)
 import FileUtils (doesDirectoryExistSafe, isSymbolicLinkSafe, listDirectorySafe)
 import System.Exit
@@ -121,7 +123,7 @@ parseGitStatusLine s =
     _ -> Nothing
 
 getGitStatus :: Config -> FilePath -> IO (Maybe RepoStatus)
-getGitStatus cfg cwd0 = do
+getGitStatus _ cwd0 = do
   let p = (proc "git" ["status", "--porcelain=v1"]) {cwd = Just cwd0}
   (exitCode, stdout, _) <-
     readCreateProcessWithExitCode p ""
@@ -130,12 +132,18 @@ getGitStatus cfg cwd0 = do
             ExitSuccess ->
               let statusLines = fromMaybe [] $ sequence $ parseGitStatusLine <$> lines stdout
                in do
-                    unpulled <- if localOnly cfg then return 0 else fromMaybe 0 <$> getUnpulled cwd0
-                    unpushed <- if localOnly cfg then return 0 else fromMaybe 0 <$> getUnpushed cwd0
+                    unpulled <- fromMaybe 0 <$> getUnpulled cwd0
+                    unpushed <- fromMaybe 0 <$> getUnpushed cwd0
                     return (Just $ RepoStatus cwd0 statusLines unpushed unpulled)
             _ -> return Nothing
         )
   ret
+
+-- TODO: log errors if verbose
+doGitFetch :: Config -> FilePath -> IO ()
+doGitFetch _ dir = do
+  let p = (proc "git" ["fetch"]) {cwd = Just dir}
+  void $ readCreateProcessWithExitCode p ""
 
 isGitAvailable :: IO Bool
 isGitAvailable = do

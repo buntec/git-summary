@@ -20,7 +20,9 @@ main = do
       root <- maybe getCurrentDirectory return (Cfg.rootPath cfg)
       countRef <- newIORef 0 :: IO (IORef Int)
       let formatter = \status -> Git.formatRepoStatus status (Cfg.showAbsPath cfg) root
+      let doFetch = Cfg.doFetch cfg
       gitDirs (Cfg.maxDepth cfg) (Cfg.filterDots cfg) root
+        & Stream.trace (\p -> if doFetch then Git.doGitFetch cfg p else return ())
         & Stream.mapMaybeM (Git.getGitStatus cfg)
         & Stream.trace (\_ -> modifyIORef' countRef (+ 1))
         & Stream.filter (if Cfg.showAllRepos cfg then const True else Git.isModified)
@@ -30,5 +32,5 @@ main = do
         & Stream.drain
       nRepos <- readIORef countRef
       putStrLn $ "\n" ++ show nRepos ++ " repos checked."
-      when (Cfg.showLegend cfg) (putStrLn $ "Legend: " ++ Git.statusLegend)
+      when ((nRepos > 0) && Cfg.showLegend cfg) (putStrLn $ "Legend: " ++ Git.statusLegend)
     else putStrLn "Error: Unable to find git executable on PATH."
